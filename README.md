@@ -1,4 +1,12 @@
+<div align="center">
+
 # TANK BATTLE v2.0 - HỒI SINH TỪ TÀN TRO
+
+<img src="tank_battle.png" width="700">
+
+Game bắn tank top-down 2D chiến thuật hạng nặng được viết bằng Python + Pygame. Phiên bản 2.0 mang đến một trải nghiệm Hardcore tập trung vào kỹ năng di chuyển, điều khiển nòng súng độc lập và tư duy chiến thuật môi trường.
+
+</div>
 
 Game bắn tank top-down 2D chiến thuật hạng nặng được viết bằng Python + Pygame. Phiên bản 2.0 mang đến một trải nghiệm Hardcore tập trung vào kỹ năng di chuyển, điều khiển nòng súng độc lập và tư duy chiến thuật môi trường.
 
