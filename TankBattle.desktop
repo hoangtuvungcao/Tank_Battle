@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Tank Battle
+Exec=/home/vantrong/Downloads/tank-battle/output/tank battle/tank battle
+Icon=/home/vantrong/Downloads/tank-battle/tank_battle.png
+Terminal=false
+Categories=Game;

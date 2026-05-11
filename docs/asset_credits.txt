@@ -1,0 +1,10 @@
+Assets from Kenney Top-Down Tanks
+https://kenney.nl/assets/top-down-tanks
+License: CC0 (Public Domain)
+
+Total: 84 images
+- Tanks: 20 images
+- Bullets: 24 images  
+- Environment: 5 images
+- Obstacles: 11 images
+- Smoke: 24 images
