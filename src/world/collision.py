@@ -25,16 +25,22 @@ class Collision:
         if map_data is None:
             return False
             
-        # Kiểm tra 4 góc của xe tăng để đảm bảo không góc nào lọt vào tường
-        corners = [
-            (tank_rect.left, tank_rect.top),         # Góc trên bên trái
-            (tank_rect.right - 1, tank_rect.top),    # Góc trên bên phải
-            (tank_rect.left, tank_rect.bottom - 1),  # Góc dưới bên trái
-            (tank_rect.right - 1, tank_rect.bottom - 1), # Góc dưới bên phải
+        # Kiểm tra 4 góc và 4 điểm giữa các cạnh của xe tăng
+        mid_x = tank_rect.centerx
+        mid_y = tank_rect.centery
+        points = [
+            (tank_rect.left, tank_rect.top),             # Góc trên trái
+            (tank_rect.right - 1, tank_rect.top),        # Góc trên phải
+            (tank_rect.left, tank_rect.bottom - 1),      # Góc dưới trái
+            (tank_rect.right - 1, tank_rect.bottom - 1), # Góc dưới phải
+            (mid_x, tank_rect.top),                      # Giữa trên
+            (mid_x, tank_rect.bottom - 1),               # Giữa dưới
+            (tank_rect.left, mid_y),                     # Giữa trái
+            (tank_rect.right - 1, mid_y),                # Giữa phải
         ]
         
-        for cx, cy in corners:
-            # Nếu bất kỳ góc nào chạm vào ô cứng (Wall, Sandbag, Barrel...)
+        for cx, cy in points:
+            # Nếu bất kỳ điểm nào chạm vào ô cứng (Wall, Sandbag, Barrel...)
             if map_data.is_solid_at(cx, cy):
                 return True # Có va chạm
         return False # An toàn

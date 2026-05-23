@@ -144,6 +144,22 @@ class Tank:
     # QUẢN LÝ NÒNG SÚNG
     # ==========================================
 
+    def rotate_turret_to_angle(self, target_angle, dt):
+        """Xoay nòng súng về phía một góc xác định một cách mượt mà."""
+        diff = target_angle - self.turret_angle
+        # Chuẩn hóa góc để xe luôn xoay theo hướng ngắn nhất (tránh xoay vòng 360 độ)
+        while diff > math.pi: diff -= 2 * math.pi
+        while diff < -math.pi: diff += 2 * math.pi
+        
+        # Giới hạn tốc độ xoay mỗi khung hình
+        max_rot = math.radians(self.turret_rotation_speed) * dt
+        if abs(diff) < max_rot:
+            self.turret_angle = target_angle # Nếu lệch ít thì gán thẳng luôn
+        elif diff > 0:
+            self.turret_angle += max_rot # Xoay phải
+        else:
+            self.turret_angle -= max_rot # Xoay trái
+
     def rotate_turret_to_target(self, target_x, target_y, dt):
         """Xoay nòng súng về phía tọa độ mục tiêu một cách mượt mà."""
         # Tính toán góc cần đạt được bằng hàm atan2

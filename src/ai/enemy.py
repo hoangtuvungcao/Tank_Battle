@@ -14,6 +14,7 @@ from enum import Enum
 from src.entities.tank import Tank # Kế thừa từ lớp xe tăng cơ bản
 from src.core.settings import TILE_SIZE
 from src.ai.behavior import AStar # Thuật toán tìm đường
+from src.world.collision import Collision # Xử lý va chạm tường
 
 # Danh sách tên ngẫu nhiên để gán cho các con Bot
 ENEMY_NAMES = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Fox", "Ghost", "Hunter", 
@@ -110,6 +111,7 @@ class Enemy(Tank):
         """
         Hàm cập nhật trí tuệ nhân tạo chính, chạy sau mỗi khung hình.
         """
+        old_x, old_y = self.x, self.y
         bullet_data = None
         # Tính khoảng cách thực tế đến người chơi
         kc = self.get_distance_to(player_pos[0], player_pos[1])
@@ -189,6 +191,9 @@ class Enemy(Tank):
 
         # --- 6. KIỂM TRA VÀ THOÁT KẸT ---
         self._check_stuck(dt, map_data)
+
+        # Giải quyết va chạm trượt để Bot không bao giờ đi xuyên tường
+        Collision.resolve_tank_wall(self, map_data, old_x, old_y)
 
         # Gọi hàm update của lớp cha để giảm cooldown bắn
         self.update(dt)
