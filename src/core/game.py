@@ -8,6 +8,7 @@ tải bản đồ, xử lý va chạm và điều khiển camera.
 
 import pygame # Thư viện game chính
 import sys    # Thư viện hệ thống để thoát chương trình
+import platform
 from src.core.settings import * # Nhập tất cả các hằng số cài đặt
 from src.core.state_manager import StateManager, GameState # Quản lý trạng thái game
 from src.core.event_handler import EventHandler # Xử lý phím và chuột
@@ -32,10 +33,14 @@ class Game:
     def __init__(self):
         """Khởi tạo các thành phần cơ bản của game."""
         pygame.init() # Khởi tạo thư viện Pygame
-        # Tạo cửa sổ game với kích thước định sẵn
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         # Đặt tiêu đề cho cửa sổ game
         pygame.display.set_caption(f"{GAME_TITLE} v{GAME_VERSION}")
+        self.fullscreen = FULLSCREEN
+        self._display_surface = None
+        self._display_scale = (1.0, 1.0)
+        self._display_offset = (0, 0)
+        # Tạo cửa sổ game với kích thước định sẵn
+        self.screen = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         # Đối tượng quản lý thời gian và FPS
         self.clock = pygame.time.Clock()
         # Biến điều khiển vòng lặp chính
@@ -44,11 +49,13 @@ class Game:
         # --- Khởi tạo các module quản lý ---
         self.state_manager = StateManager() # Quản lý trạng thái (Menu/Play/...)
         self.event_handler = EventHandler() # Lắng nghe sự kiện bàn phím/chuột
+        self._apply_display_mode(FULLSCREEN)
         self.sound_manager = SoundManager() # Điều khiển nhạc và hiệu ứng âm thanh
         
         # --- Khởi tạo các thành phần giao diện ---
         self.menu = MainMenu()
         self.settings_menu = SettingsMenu()
+        self.settings_menu.fullscreen = self.fullscreen
         self.tank_select = TankSelectMenu()
         self.hud = HUD()
         self.level_transition = LevelTransition()
@@ -91,6 +98,7 @@ class Game:
             # 2. Vẽ tất cả lên màn hình
             self._draw()
             # 3. Cập nhật hiển thị thực tế lên màn hình máy tính
+            self._present()
             pygame.display.flip()
             
         pygame.quit() # Giải phóng bộ nhớ Pygame
@@ -169,13 +177,54 @@ class Game:
                 
             if result == "back":
                 # Áp dụng chế độ Toàn màn hình nếu được chọn
-                current_fs = (self.screen.get_flags() & pygame.FULLSCREEN) != 0
-                if self.settings_menu.fullscreen and not current_fs:
-                    self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN | pygame.SCALED)
-                elif not self.settings_menu.fullscreen and current_fs:
-                    self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+                self._apply_display_mode(self.settings_menu.fullscreen)
                     
                 self.state_manager.change_state(GameState.MENU)
+
+    def _apply_display_mode(self, fullscreen):
+        """Switch display modes without using pygame.SCALED, which can crash on Windows."""
+        previous_fullscreen = self.fullscreen
+        try:
+            if fullscreen:
+                self._display_surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            else:
+                self._display_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.fullscreen = fullscreen
+        except pygame.error as exc:
+            print(f"Cannot switch display mode on {platform.system()}: {exc}")
+            self._display_surface = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+            self.fullscreen = False
+
+        if hasattr(self, "settings_menu"):
+            self.settings_menu.fullscreen = self.fullscreen
+        self._update_display_transform()
+        if previous_fullscreen != self.fullscreen:
+            pygame.event.clear()
+
+    def _update_display_transform(self):
+        display_w, display_h = self._display_surface.get_size()
+        if not self.fullscreen:
+            self._display_scale = (1.0, 1.0)
+            self._display_offset = (0, 0)
+        else:
+            scale = min(display_w / SCREEN_WIDTH, display_h / SCREEN_HEIGHT)
+            scaled_w = int(SCREEN_WIDTH * scale)
+            scaled_h = int(SCREEN_HEIGHT * scale)
+            self._display_scale = (scale, scale)
+            self._display_offset = ((display_w - scaled_w) // 2, (display_h - scaled_h) // 2)
+        self.event_handler.set_mouse_transform(self._display_scale, self._display_offset)
+
+    def _present(self):
+        if not self.fullscreen:
+            self._display_surface.blit(self.screen, (0, 0))
+            return
+
+        offset_x, offset_y = self._display_offset
+        scale_x, _ = self._display_scale
+        scaled_size = (int(SCREEN_WIDTH * scale_x), int(SCREEN_HEIGHT * scale_x))
+        self._display_surface.fill(COLOR_BLACK)
+        frame = pygame.transform.smoothscale(self.screen, scaled_size)
+        self._display_surface.blit(frame, (offset_x, offset_y))
 
     def _update_tank_select(self):
         """Xử lý chọn màu xe tăng và bắt đầu game."""
