@@ -42,7 +42,7 @@ BULLET_RADIUS = 4           # Kích thước va chạm của viên đạn
 # ==========================================
 # THÔNG SỐ RIÊNG CHO NGƯỜI CHƠI (Player)
 # ==========================================
-PLAYER_HEALTH = 150         # Máu người chơi (Cao hơn để tăng độ bền)
+PLAYER_HEALTH = 360         # Máu người chơi (Cao hơn để tăng độ bền)
 PLAYER_SPEED = 250.0        # Tốc độ di chuyển nhanh hơn để dễ né đạn
 PLAYER_ROTATION_SPEED = 200.0 # Khả năng xoay chuyển linh hoạt hơn
 PLAYER_TURRET_SPEED = 300.0  # Tốc độ xoay nòng súng cực nhanh
