@@ -107,10 +107,66 @@ jobs:
           retention-days: 30
 
   # ─────────────────────────────────────────────
-  #  Job 3: Tạo GitHub Release (chỉ khi push tag)
+  #  Job 3a: Rolling "latest" release — mỗi push lên main
   # ─────────────────────────────────────────────
-  release:
-    name: Create GitHub Release
+  release-latest:
+    name: Update "latest" Release
+    needs: [ build-windows, build-linux ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📥 Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TankBattle-Windows
+          path: release/
+
+      - name: 📥 Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: TankBattle-Linux
+          path: release/
+
+      - name: 🏷️ Rename Linux binary
+        run: mv release/TankBattle release/TankBattle-linux
+
+      - name: 🔄 Create or update "latest" pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Tank Battle — Latest Build"
+          body: |
+            ## 🎮 Tank Battle — Latest Build
+
+            > ⚠️ Bản build tự động từ nhánh `main`, cập nhật sau mỗi lần push.
+            > Để tải bản phát hành chính thức, xem release có tag `vX.Y`.
+
+            **Commit:** `${{ github.sha }}`
+
+            ### Tải xuống
+            | Hệ điều hành | File |
+            |---|---|
+            | 🪟 Windows | `TankBattle.exe` |
+            | 🐧 Linux   | `TankBattle-linux` |
+
+            ### Cách chạy (Linux)
+            ```bash
+            chmod +x TankBattle-linux
+            ./TankBattle-linux
+            ```
+          files: |
+            release/TankBattle.exe
+            release/TankBattle-linux
+          draft: false
+          prerelease: true
+          make_latest: false
+
+  # ─────────────────────────────────────────────
+  #  Job 3b: Versioned release — chỉ khi push tag v*
+  # ─────────────────────────────────────────────
+  release-versioned:
+    name: Create Versioned Release
     needs: [ build-windows, build-linux ]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
@@ -131,7 +187,7 @@ jobs:
       - name: 🏷️ Rename Linux binary
         run: mv release/TankBattle release/TankBattle-linux
 
-      - name: 🚀 Publish GitHub Release
+      - name: 🚀 Publish versioned GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: "Tank Battle ${{ github.ref_name }}"
@@ -154,3 +210,5 @@ jobs:
             release/TankBattle-linux
           draft: false
           prerelease: false
+          make_latest: true
+
