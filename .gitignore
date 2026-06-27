@@ -9,3 +9,8 @@ env/
 .idea/
 *.log
 .DS_Store
+
+# PyInstaller build output (build locally, ignore in git)
+build/
+dist/
+*.spec.bak
